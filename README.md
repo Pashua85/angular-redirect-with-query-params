@@ -44,6 +44,7 @@
     // src/app/components/info-with-params.component.html
 
     ...
+      ```html
       <app-load-doc
         [hidden]="step !== 'addDoc'"
         (returnToDetails)="returnToDetails()"
