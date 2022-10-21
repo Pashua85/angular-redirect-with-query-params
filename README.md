@@ -20,37 +20,43 @@
 
 Перейдем к ситуации поинтересней: допустим на сайте "исхода" компонент имеет свой роут, а его двойник в нашем приложении отображается родителем исходя из параметра в paramsMap в роуте:
 
-    // src/app/components/info-with-params.component.ts
+ 
 
-    export class InfoWithParamsComponent implements OnInit {
-      ...
-        ngOnInit() {
-          this.route.paramMap
-            .pipe(
-              map((params: ParamMap) => params.get('doc')),
-              untilDestroyed(this)
-            )
-            .subscribe((doc) => {
-              if (doc === '1') {
-                this.step = 'addDoc';
-              } else {
-                this.step = 'details';
-              }
-            });
-        }
-      ...
+```ts
+// src/app/components/info-with-params.component.ts
+
+export class InfoWithParamsComponent implements OnInit {
+  ...
+    ngOnInit() {
+      this.route.paramMap
+        .pipe(
+          map((params: ParamMap) => params.get('doc')),
+          untilDestroyed(this)
+        )
+        .subscribe((doc) => {
+          if (doc === '1') {
+            this.step = 'addDoc';
+          } else {
+            this.step = 'details';
+          }
+        });
     }
+  ...
+}
+```
 
-    // src/app/components/info-with-params.component.html
+```html
 
-    ...
-      ```html
-      <app-load-doc
-        [hidden]="step !== 'addDoc'"
-        (returnToDetails)="returnToDetails()"
-      >
-      </app-load-doc>
-    ...
+// src/app/components/info-with-params.component.html
+
+...
+  <app-load-doc
+    [hidden]="step !== 'addDoc'"
+    (returnToDetails)="returnToDetails()"
+  >
+  </app-load-doc>
+...
+```
 
 В этом случае может выручить [urlMatcher](https://angular.io/api/router/UrlMatcher):
 
