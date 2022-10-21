@@ -60,83 +60,89 @@ export class InfoWithParamsComponent implements OnInit {
 
 В этом случае может выручить [urlMatcher](https://angular.io/api/router/UrlMatcher):
 
-    // src/app/app.routing.module.ts
+```ts
+// src/app/app.routing.module.ts
 
-    function matcherForDocs(
-      segments: UrlSegment[],
-      group: UrlSegmentGroup,
-      route: Route
-    ): UrlMatchResult | null {
-      if (segments[0].path === 'add-documents-with-matcher') {
-        const url = new UrlSegment('info-params', { doc: '1' });
+function matcherForDocs(
+  segments: UrlSegment[],
+  group: UrlSegmentGroup,
+  route: Route
+): UrlMatchResult | null {
+  if (segments[0].path === 'add-documents-with-matcher') {
+    const url = new UrlSegment('info-params', { doc: '1' });
 
-        return {
-          consumed: [url],
-        };
-      }
-      return null;
-    }
+    return {
+      consumed: [url],
+    };
+  }
+  return null;
+}
 
-    const routes: Routes = [
-      ...,
-      { matcher: matcherForDocs, component: InfoWithParamsComponent },
-      ...
-    ]
+const routes: Routes = [
+  ...,
+  { matcher: matcherForDocs, component: InfoWithParamsComponent },
+  ...
+]
+```
 
 ## Передача query-параметров ##
 
 Но если родитель использует queryParams, то, к сожалению, матчер тут уже не поможет (именно с такой ситуацией я столкнулся на реальном проекте и появилось желание поделиться своим опытом в этой статье). В этом случае можно сделать редирект в самом компоненте:
 
-    // info-with-query-params1.component.ts
-    export class InfoWithQueryParamsComponent1 implements OnInit {
-      ...
+```ts
+// info-with-query-params1.component.ts
+export class InfoWithQueryParamsComponent1 implements OnInit {
+  ...
 
-      ngOnInit() {
-        if (this.route.snapshot.url[0].path === 'add-documents-query-params-1') {
-          this.router.navigate(['/info-query-params-1'], {
-            queryParams: {
-              doc: 1,
-            },
-          });
+  ngOnInit() {
+    if (this.route.snapshot.url[0].path === 'add-documents-query-params-1') {
+      this.router.navigate(['/info-query-params-1'], {
+        queryParams: {
+          doc: 1,
+        },
+      });
 
-          // тут нужно избежать отработки остальной логики при инициализации компонента, иначе это произойдёт дважды
-          return;
-        }
+      // тут нужно избежать отработки остальной логики при инициализации компонента, иначе это произойдёт дважды
+      return;
+    }
 
-        ...
-      }
+    ...
+  }
+```
 
 Однако более изящным решением мне кажется в данной ситуации будет использование гарда:
 
-    // src/app/guards/
-    @Injectable()
-    export class RedirectGuard implements CanActivate {
-      constructor(private _router: Router) {}
+```ts
+// src/app/guards/
+@Injectable()
+export class RedirectGuard implements CanActivate {
+  constructor(private _router: Router) {}
 
-      public canActivate(route: ActivatedRouteSnapshot): boolean {
-        if (route.routeConfig.path === 'add-documents-query-params-2') {
-          this._router.navigate(['/info-query-params-2'], {
-            queryParams: {
-              doc: 1,
-            },
-          });
-          return false;
-        }
-        return true;
-      }
-    }
-    
-    // src/app/app.routing.module.ts
-
-    const routes: Routes = [
-      ...,
-        {
-          path: 'add-documents-query-params-2',
-          canActivate: [RedirectGuard],
-          component: InfoWithQueryParamsComponent2,
+  public canActivate(route: ActivatedRouteSnapshot): boolean {
+    if (route.routeConfig.path === 'add-documents-query-params-2') {
+      this._router.navigate(['/info-query-params-2'], {
+        queryParams: {
+          doc: 1,
         },
-      ...
-    ]
+      });
+      return false;
+    }
+    return true;
+  }
+}
+
+// src/app/app.routing.module.ts
+
+const routes: Routes = [
+  ...,
+    {
+      path: 'add-documents-query-params-2',
+      canActivate: [RedirectGuard],
+      component: InfoWithQueryParamsComponent2,
+    },
+  ...
+]
+```
 
 Как видно в логах консоли родитель в этом случае инициализируется один раз, как и должен, и отображает нужный нам компонент.
 
