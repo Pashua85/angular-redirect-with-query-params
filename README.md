@@ -8,7 +8,7 @@
 
 Начнем c самого простого случая - пути просто не совпадают. Здесь поможет простой редирект:
 
-````ts
+```ts
 // src/app/app.routing.module.ts
 
 const routes: Routes = [
@@ -16,6 +16,7 @@ const routes: Routes = [
   { path: 'non-exist-route', redirectTo: 'from-non-exist-route' },
   ...
 ]
+```
 
 ## Передача параметров в paramsMap
 
@@ -42,7 +43,7 @@ export class InfoWithParamsComponent implements OnInit {
     }
   ...
 }
-````
+```
 
 ```html
 // src/app/components/info-with-params.component.html ...
